@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MP Pond calculator</title>
+
+  <style>
+    :root{
+      /* VSC-like palette */
+      --clr-primary:#1F3668;
+      --clr-primary-dark:#4166b4;
+      --clr-secondary:#2B4A86;
+      --clr-bg1:#1F3668;
+      --clr-bg2:#FFFFFF;
+
+      --clr-danger:#dc2626;
+      --clr-warning:#facc15;
+      --clr-card:#ffffff;
+      --clr-muted:#6b7280;
+      --shadow:0 10px 28px rgba(17,24,39,.10);
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box;font-family:'Segoe UI', Tahoma, Arial, sans-serif}
+    body{
+      margin:0;
+      color:#111827;
+      background:linear-gradient(180deg, var(--clr-bg1) 0%, #E9EEF9 20%, var(--clr-bg2) 100%);
+      min-height:100vh;
+    }
+
+    h1{ text-align:center; margin:26px 0 18px; font-size:26px; color:#fff; letter-spacing:.2px; }
+    .topbar{
+      padding:18px 12px 6px;
+      background:linear-gradient(135deg, #1F3668 0%, #2B4A86 100%);
+      box-shadow:0 6px 18px rgba(0,0,0,.10);
+    }
+
+    .tabs{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:14px 0 0; padding:0 10px 18px; }
+    .tab{
+  padding:10px 18px;
+  cursor:pointer;
+  background:#1F3668;        /* น้ำเงิน */
+  color:#ffffff;             /* ตัวหนังสือขาว */
+  border:2px solid #ffffff;  /* กรอบขาว */
+  border-radius:12px;
+  font-weight:600;
+  transition:.25s;
+}
+
+    .tab:hover{ transform:translateY(-1px); }
+   .tab.active{
+  background:#ffffff;        /* พื้นขาว */
+  color:#1F3668;             /* ตัวหนังสือน้ำเงิน */
+  border:2px solid #ffffff;  /* กรอบขาว */
+}
+
+
+    .container{
+      max-width:980px; margin:18px auto 40px; padding:24px;
+      background:var(--clr-card); border-radius:var(--radius); box-shadow:var(--shadow);
+    }
+
+    label{ display:block; margin-bottom:8px; font-weight:800; }
+    .radio-group{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+
+    input[type="number"], input[type="text"], select, textarea{
+      width:100%; padding:14px 16px; border:1px solid #e5e7eb; border-radius:12px;
+      margin-bottom:16px; font-size:16px; line-height:1.4; min-height:46px; background:#fff;
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus, textarea:focus{
+      outline:none; border-color:#B9C7EA; box-shadow:0 0 0 4px rgba(101,126,185,.18);
+    }
+
+    textarea{ resize:none; background:#F7F9FF; min-height:260px; } /* ✅ ยาวขึ้น */
+
+    button{ border:none; border-radius:12px; padding:12px 18px; font-size:15px; font-weight:900; cursor:pointer; transition:.25s; }
+    .btn-primary{ background:var(--clr-primary); color:#fff; }
+    .btn-primary:hover{ background:var(--clr-primary-dark); }
+    .btn-secondary{ background:var(--clr-secondary); color:#fff; }
+    .btn-warning{ background:var(--clr-warning); color:#111; }
+    .btn-danger{ background:var(--clr-danger); color:#fff; }
+
+    .copy-btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 16px;
+      border-radius:12px; background:var(--clr-secondary); color:#fff; font-weight:900;
+    }
+    .copy-btn:hover{ filter:brightness(.97); }
+
+    .hidden{ display:none; }
+    .hint{color:var(--clr-muted); font-size:13px; margin:8px 0 10px; line-height:1.55; }
+
+    .items-table{ width:100%; border-collapse:collapse; margin-bottom:14px; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+    .items-table thead{ background:var(--clr-primary); color:#fff; }
+    .items-table th, .items-table td{ padding:10px; text-align:center; }
+    .items-table tbody tr:nth-child(odd){ background:#F6F8FF; }
+    .items-table th:first-child, .items-table td:first-child{ min-width: 200px; }
+    .items-table input[type="number"], .items-table select{
+      color:#111827 !important; -webkit-text-fill-color:#111827;
+      background:#fff; width:100%; height:52px; font-size:18px; padding:10px 12px; text-align:center;
+    }
+
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:12px;}
+    @media (max-width:600px){
+      .container{ padding:14px; }
+      .tab{ padding:8px 14px; font-size:14px; }
+      button{ font-size:16px; }
+      .items-table{ display:block; overflow-x:auto; }
+      .row{ grid-template-columns:1fr; }
+      input[type="number"], input[type="text"], select, textarea{ font-size:18px; min-height:52px; }
+      .items-table input[type="number"], .items-table select{ height:56px; font-size:20px; }
+      textarea{ min-height:300px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <h1>MP Pond calculator</h1>
+    <div class="tabs">
+      <div class="tab active" data-tab="pond">พลาสติกปูบ่อ</div>
+      <div class="tab" data-tab="mpflow">MP Flow</div>
+    </div>
+  </div>
+
+  <!-- POND -->
+  <div class="container" id="pondContainer">
+    <form id="pondForm">
+      <label>ข้อมูลผู้รับ (ชื่อ-ที่อยู่-เบอร์โทร) (ถ้ามี)</label>
+      <textarea id="pondCustInfo" placeholder="ถ้ามีข้อมูลผู้รับ ระบบจะขึ้นต้นข้อความว่า ส่ง..."></textarea>
+
+      <label>เลือกความหนา:</label>
+      <div class="radio-group">
+        <label><input type="radio" name="size" value="0.3L" required> LDPE 0.3</label>
+        <label><input type="radio" name="size" value="0.5L" required> LDPE 0.5</label>
+        <label><input type="radio" name="size" value="0.5H" required> HDPE 0.5</label>
+        <label><input type="radio" name="size" value="0.75H" required> HDPE 0.75</label>
+        <label><input type="radio" name="size" value="1.0H" required> HDPE 1.0</label>
+        <label><input type="radio" name="size" value="all" required> ไม่ระบุความหนา (โชว์ราคาทุกตัวเลือก)</label>
+      </div>
+
+      <label>ความกว้าง (เมตร):</label>
+      <input type="number" id="pondWidth" step="0.01" placeholder="กรอกความกว้าง" required>
+
+      <label>ความยาว (เมตร):</label>
+      <input type="number" id="pondLength" step="0.01" placeholder="กรอกความยาว" required>
+
+      <label>ความลึก (เมตร, ไม่บังคับ):</label>
+      <input type="number" id="pondDepth" step="0.01" placeholder="กรอกความลึก (ถ้ามี)">
+
+      <div class="hint">
+        สูตรเผื่อผ้าเมื่อมีความลึก: เพิ่ม (ลึก×2 + 2) ให้ทั้งกว้างและยาว<br>
+        ค่าส่ง: คิดตามน้ำหนัก (5 บาท/กก.) ขั้นต่ำ 300 สูงสุด 4,000
+      </div>
+<label>ชื่อแอดมิน</label>
+<select id="adminSelect">
+  <option value="">เลือกชื่อแอดมิน...</option>
+  <option value="พี่เก๋">พี่เก๋</option>
+  <option value="บิ๊ง">บิ๊ง</option>
+  <option value="เปิ้ล">เปิ้ล</option>
+  <option value="อิง">อิง</option>
+</select>
+
+      <button type="submit" class="btn-primary">คำนวณ</button>
+      <button type="button" id="pondReset" class="btn-warning hidden">คำนวณใหม่</button>
+    </form>
+
+    <textarea id="pondResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
+    <button id="pondCopy" class="copy-btn hidden">คัดลอกข้อความ</button>
+  </div>
+
+  <!-- MP FLOW -->
+  <div class="container hidden" id="mpflowContainer">
+    <form id="mpflowForm">
+      <label>ข้อมูลผู้รับ (ชื่อ-ที่อยู่-เบอร์โทร) (ถ้ามี)</label>
+      <textarea id="mpflowCustInfo" placeholder="ถ้ามีข้อมูลผู้รับ ระบบจะขึ้นต้นข้อความว่า ส่ง..."></textarea>
+
+      <h3 style="margin-top:0">รายการผ้า (จำเป็นต้องมีอย่างน้อย 1)</h3>
+      <table class="items-table" id="clothTable">
+        <thead>
+          <tr>
+            <th>แบบ</th>
+            <th>กว้าง (ม.)</th>
+            <th>ยาว (ม.)</th>
+            <th>จำนวน</th>
+            <th>ลบ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" id="addCloth" class="btn-secondary" style="margin-bottom:8px">+ เพิ่มรายการผ้า</button>
+
+      <div class="hint">
+        ค่าเริ่มต้นเป็น “ระบุเอง” (คิด 250 บาท/ตร.ม.) • ถ้าเลือกแบบสำเร็จ ระบบจะกรอกกว้าง×ยาวให้อัตโนมัติและคิดราคาตามชุดสำเร็จ
+      </div>
+
+      <hr style="opacity:.25; margin:16px 0">
+
+      <label>ชุดเหล็กแบน (ไม่บังคับ)</label>
+      <div class="hint">
+        เลือกชุดเหล็กแบนตามความยาว/ความกว้างรถ ระบบจะคำนวณจำนวนเหล็กและราคา (บาท/คัน) แล้วคูณตามจำนวนคัน
+      </div>
+
+      <table class="items-table" id="flatbarItemsTable">
+        <thead>
+          <tr>
+            <th>ชุดเหล็กแบน</th>
+            <th>จำนวนคัน</th>
+            <th>ลบ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" id="addFlatbarRow" class="btn-secondary" style="margin-bottom:8px">+ เพิ่มรายการเหล็กแบน</button>
+
+      <div class="row">
+        <div>
+          <label>ชื่อแอดมิน</label>
+        <select id="mpflowAdminSelect">
+          <option value="">เลือกชื่อแอดมิน...</option>
+          <option value="พี่เก๋">พี่เก๋</option>
+          <option value="บิ๊ง">บิ๊ง</option>
+          <option value="เปิ้ล">เปิ้ล</option>
+          <option value="อิง">อิง</option>
+        </select>
+
+        </div>
+        <div>
+          <label>วันที่ (ไม่บังคับ)</label>
+          <input type="text" id="mpflowDate" placeholder="เช่น 20/2/69">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" style="margin-top:12px">คำนวณและสร้างสรุป</button>
+      <button type="button" id="mpflowReset" class="btn-warning hidden">คำนวณใหม่</button>
+    </form>
+
+    <textarea id="mpflowResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
+    <button id="mpflowCopy" class="copy-btn hidden">คัดลอกข้อความ</button>
+  </div>
+
+  <script>
+    // ---------- Tab control ----------
+    const tabs = document.querySelectorAll('.tab');
+    const sections = { pond: 'pondContainer', mpflow: 'mpflowContainer' };
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      Object.values(sections).forEach(id => document.getElementById(id).classList.add('hidden'));
+      const target = tab.getAttribute('data-tab');
+      document.getElementById(sections[target]).classList.remove('hidden');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }));
+
+    // ---------- Company bank ----------
+    const BANK_TEXT =
+`ธนาคารกสิกรไทย
+ชื่อบัญชี: บริษัทมนูธรรมพลาสติก
+เลขที่: 1888-5999-39`;
+
+    // ---------- Shipping rules ----------
+    const SHIP_MIN = 300, SHIP_MAX = 4000, SHIP_RATE_PER_KG = 5;
+    function clampShipping(x){
+      if (x <= 0) return 0;
+      return Math.min(SHIP_MAX, Math.max(SHIP_MIN, Math.ceil(x)));
+    }
+    function calcShipPlasticByWeightKg(weightKg){
+      return clampShipping(weightKg * SHIP_RATE_PER_KG);
+    }
+
+    // MP FLOW Shipping (คงกติกาเดิม)
+    const MPFLOW_FLAT_SHIP = 300;
+    function calcShipMPFlow(itemsSubtotal, isNimCase){
+      if(!isNimCase && itemsSubtotal >= 2000) return 0;
+      if(itemsSubtotal <= 0) return 0;
+      return MPFLOW_FLAT_SHIP;
+    }
+
+    // ---------- Pond pricing (ไม่มีโปร) ----------
+    // อ้างอิงราคาปกติจากโค้ดเดิม + เพิ่ม LDPE 0.5
+    // LDPE 0.3 = 40, LDPE 0.5 = 60, HDPE 0.5 = 65, HDPE 0.75 = 85, HDPE 1.0 = 105
+    function getPondPriceList(){
+      return {
+        '0.3L': { price:40,  material:'LDPE', thk:0.3 },
+        '0.5L': { price:60,  material:'LDPE', thk:0.5 },
+        '0.5H': { price:65,  material:'HDPE', thk:0.5 },
+        '0.75H':{ price:85,  material:'HDPE', thk:0.75 },
+        '1.0H': { price:105, material:'HDPE', thk:1.0 }
+      };
+    }
+
+    function thkToKgPerSqm(thk){
+      const t = Number(thk);
+      return (t === 0.3) ? 0.3 :
+             (t === 0.5) ? 0.5 :
+             (t === 0.75) ? 0.75 :
+             (t === 1.0) ? 1.0 : 0;
+    }
+
+    // ---------- POND LOGIC ----------
+    const pondForm = document.getElementById('pondForm');
+    const pondWidth = document.getElementById('pondWidth');
+    const pondLength = document.getElementById('pondLength');
+    const pondDepth = document.getElementById('pondDepth');
+    const pondCustInfo = document.getElementById('pondCustInfo');
+    const pondResult = document.getElementById('pondResult');
+    const pondCopy = document.getElementById('pondCopy');
+    const pondReset = document.getElementById('pondReset');
+
+    pondForm.onsubmit = function(e){
+      e.preventDefault();
+
+      const size = document.querySelector('input[name="size"]:checked');
+      let w = parseFloat(pondWidth.value), l = parseFloat(pondLength.value), d = parseFloat(pondDepth.value || 0);
+      if(!size || w<=0 || l<=0){ alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง'); return; }
+
+      const cust = (pondCustInfo.value || '').trim();
+      const ow = w, ol = l;
+
+      if(d>0){ w = w + d*2 + 2; l = l + d*2 + 2; }
+
+      const priceList = getPondPriceList();
+      const area = w*l;
+
+      let out = '';
+      if(cust) out += `ส่ง\n${cust}\n\n`;
+
+      if(size.value === 'all'){
+        const lines = Object.keys(priceList).map(k=>{
+          const p = priceList[k];
+          const total = Math.floor(area * p.price);
+          const label = `${p.material} ${p.thk}`;
+          return `✅ ${label} มม. – ${total.toLocaleString()} บาท (${p.price} บาท/ตร.ม.)`;
+        }).join('\n');
+
+        out += `จากขนาดที่ลูกค้าแจ้งมา ราคาประเมินดังนี้ค่ะ\n`;
+        out += `${lines}\n\n`;
+        out += `สนใจความหนาไหนแจ้งได้เลยค่ะ 😊`;
+      } else {
+        const sel = priceList[size.value];
+        const total = Math.floor(area * sel.price);
+
+        const kg = area * thkToKgPerSqm(sel.thk);
+        const ship = calcShipPlasticByWeightKg(kg);
+        const grand = Math.floor(total + ship);
+
+        out += `📍 รายการ:\n`;
+        out += `ผ้าพลาสติก ${sel.material} หนา ${sel.thk} มม. (${sel.price} บาท/ตร.ม.)\n`;
+        
+        if(d>0){out += `ขนาด ${ow} ม. × ${ol} ม.${d>0?` ลึก ${d} ม.`:''}\n`;}
+        out += `ผ้าขนาด ${w} ม. × ${l} ม. = ${area.toLocaleString()} ตร.ม.\n`;
+        out += `(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)\n\n`;
+
+        out += `ราคาผ้า ${total.toLocaleString()} บาท\n`;
+        out += `ค่าจัดส่ง ${ship.toLocaleString()} บาท\n`;
+        out += `น้ำหนักประมาณ ${kg.toFixed(1)} กก.\n\n`;
+
+        out += `📌 สรุปยอดรวมทั้งหมด: ${grand.toLocaleString()} บาท\n`;
+        out += `${BANK_TEXT}\n\n`;
+        out += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\n`;
+        out += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n`;
+        const admin = document.getElementById('adminSelect').value;
+        if(admin){
+  out += `\nแอดมิน: ${admin}`;
+}
+      }
+
+      pondResult.value = out.trim();
+      pondCopy.classList.remove('hidden');
+      pondReset.classList.remove('hidden');
+    };
+
+    pondCopy.onclick = ()=>{ pondResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
+    pondReset.onclick = ()=>{ pondForm.reset(); pondResult.value=''; pondCopy.classList.add('hidden'); pondReset.classList.add('hidden'); };
+
+    // ---------- MP FLOW ----------
+    const mpflowForm = document.getElementById('mpflowForm');
+    const mpflowResult = document.getElementById('mpflowResult');
+    const mpflowCopy = document.getElementById('mpflowCopy');
+    const mpflowReset = document.getElementById('mpflowReset');
+
+    const clothTableBody = document.querySelector('#clothTable tbody');
+    const btnAddCloth = document.getElementById('addCloth');
+
+    const CLOTH_PRESETS = {
+      '4x3':2400, '4x3.5':2800, '6x3.5':4200, '6x4':4800,
+      '7x3.5':4900, '7x4':5600, '8x4':6500, '8x5':8500
+    };
+    const PRESET_SIZES = {
+      '4x3':{w:4,l:3}, '4x3.5':{w:4,l:3.5}, '6x3.5':{w:6,l:3.5}, '6x4':{w:6,l:4},
+      '7x3.5':{w:7,l:3.5}, '7x4':{w:7,l:4}, '8x4':{w:8,l:4}, '8x5':{w:8,l:5}
+    };
+
+    function makeClothRow(defaultType='custom'){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <select class="ptype">
+            <option value="custom" selected>ระบุเอง</option>
+            <option value="4x3">4 ม. × 3 ม. — 2,400</option>
+            <option value="4x3.5">4 ม. × 3.5 ม. — 2,800</option>
+            <option value="6x3.5">6 ม. × 3.5 ม. — 4,200</option>
+            <option value="6x4">6 ม. × 4 ม. — 4,800</option>
+            <option value="7x3.5">7 ม. × 3.5 ม. — 4,900</option>
+            <option value="7x4">7 ม. × 4 ม. — 5,600</option>
+            <option value="8x4">8 ม. × 4 ม. — 6,500</option>
+            <option value="8x5">8 ม. × 5 ม. — 8,500</option>
+          </select>
+        </td>
+        <td><input type="number" class="cw" step="0.1" min="0.1" placeholder="กว้าง (ม.)"></td>
+        <td><input type="number" class="cl" step="0.1" min="0.1" placeholder="ยาว (ม.)"></td>
+        <td><input type="number" class="cq" value="1" min="1"></td>
+        <td><button type="button" class="btn-danger del">ลบ</button></td>`;
+
+      const sel = tr.querySelector('.ptype');
+      const cw = tr.querySelector('.cw');
+      const cl = tr.querySelector('.cl');
+      const delBtn = tr.querySelector('.del');
+
+      function applyType(){
+        const val = sel.value;
+        if(val !== 'custom'){
+          const s = PRESET_SIZES[val];
+          cw.value = s.w; cl.value = s.l;
+          cw.disabled = true; cl.disabled = true;
+        } else {
+          cw.disabled = false; cl.disabled = false;
+        }
+      }
+
+      sel.addEventListener('change', applyType);
+      delBtn.addEventListener('click', ()=> tr.remove());
+      sel.value = defaultType;
+      applyType();
+      clothTableBody.appendChild(tr);
+    }
+    btnAddCloth.addEventListener('click', ()=> makeClothRow('custom'));
+    makeClothRow('custom');
+
+    // flatbar presets
+    const flatbarItemsBody = document.querySelector('#flatbarItemsTable tbody');
+    const addFlatbarRowBtn = document.getElementById('addFlatbarRow');
+
+    const FLATBAR_PRESETS = {
+      '7-25': { id:'7-25', length:7, width:2.5, pricePerCar:1850,
+        longBars:[{len:3.5,qty:8}], crossBars:[{len:2.4,qty:3}], cornerBars:[{len:0.6,qty:4}] },
+      '6-25': { id:'6-25', length:6, width:2.5, pricePerCar:1650,
+        longBars:[{len:3.0,qty:8}], crossBars:[{len:2.4,qty:3}], cornerBars:[{len:0.6,qty:4}] },
+      '5-25': { id:'5-25', length:5, width:2.5, pricePerCar:1450,
+        longBars:[{len:3.0,qty:4},{len:2.0,qty:4}], crossBars:[{len:2.4,qty:3}], cornerBars:[{len:0.6,qty:4}] },
+      '4-20': { id:'4-20', length:4, width:2.0, pricePerCar:1200,
+        longBars:[{len:2.0,qty:8}], crossBars:[{len:2.0,qty:3}], cornerBars:[{len:0.6,qty:4}] },
+    };
+
+    function makeFlatbarRow(defaultId='7-25', qty=1){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <select class="fpreset">
+            <option value="7-25">รถยาว 7 ม. กว้าง 2.5 ม. — 1,850 บาท/คัน</option>
+            <option value="6-25">รถยาว 6 ม. กว้าง 2.5 ม. — 1,650 บาท/คัน</option>
+            <option value="5-25">รถยาว 5 ม. กว้าง 2.5 ม. — 1,450 บาท/คัน</option>
+            <option value="4-20">รถยาว 4 ม. กว้าง 2 ม. — 1,200 บาท/คัน</option>
+          </select>
+        </td>
+        <td><input type="number" class="fqty" step="1" min="1" value="${qty}"></td>
+        <td><button type="button" class="btn-danger fdel">ลบ</button></td>`;
+      tr.querySelector('.fpreset').value = defaultId;
+      tr.querySelector('.fdel').onclick = ()=> tr.remove();
+      flatbarItemsBody.appendChild(tr);
+    }
+    addFlatbarRowBtn.addEventListener('click', ()=> makeFlatbarRow());
+    makeFlatbarRow();
+
+    function collectFlatbarItems(){
+      const rows = [...flatbarItemsBody.querySelectorAll('tr')];
+      const items = [];
+      for(const tr of rows){
+        const id = tr.querySelector('.fpreset')?.value;
+        const qty = Math.max(1, parseInt(tr.querySelector('.fqty')?.value || 1, 10));
+        const preset = FLATBAR_PRESETS[id];
+        if(preset && qty>0) items.push({preset, qty});
+      }
+      return items;
+    }
+
+    function calcFlatbarAggregate(items){
+      if(!items.length) return { text:'', totalPrice:0 };
+      let blocks=[], totalPrice=0;
+
+      for(const {preset, qty} of items){
+        const p = preset;
+        const totalThis = p.pricePerCar * qty;
+        totalPrice += totalThis;
+
+        const longLines = (p.longBars||[]).map(b=>`เหล็กแบน ${b.len} ม. × ${b.qty*qty} เส้น`).join('\n');
+        const crossLines = (p.crossBars||[]).map(b=>`เหล็กสำหรับติดตั้งแนวขวาง ${b.len} ม. × ${b.qty*qty} เส้น`).join('\n');
+        const cornerLines = (p.cornerBars||[]).map(b=>`เหล็กสำหรับติดตั้งแนวตั้งมุม ${b.len} ม. × ${b.qty*qty} เส้น`).join('\n');
+
+        const unitText = qty>1
+          ? `รวมยอดชุดติดตั้ง ${p.pricePerCar.toLocaleString()} บาท/คัน จำนวน ${qty} คัน = ${totalThis.toLocaleString()} บาท`
+          : `รวมยอดชุดติดตั้ง ${p.pricePerCar.toLocaleString()} บาท/คัน`;
+
+        blocks.push(
+`📦 ชุดเหล็กแบนสำหรับติดตั้ง MP Flow 2.0
+ความยาวรถ ${p.length} เมตร ความกว้าง ${p.width} เมตร
+
+สิ่งที่จะได้รับ:
+${longLines}
+${crossLines}
+${cornerLines}
+และสกรูสำหรับติดตั้ง
+${unitText}`
+        );
+      }
+      return { text: blocks.join('\n\n'), totalPrice };
+    }
+
+    function collectCloth(){
+      const rows = [...clothTableBody.querySelectorAll('tr')];
+      let has=false, price=0, lines=[];
+      for(const tr of rows){
+        const type = tr.querySelector('.ptype').value;
+        const cw = parseFloat(tr.querySelector('.cw').value||0);
+        const cl = parseFloat(tr.querySelector('.cl').value||0);
+        const qty = Math.max(1, parseInt(tr.querySelector('.cq').value||1,10));
+
+        if(type !== 'custom'){
+          const u = CLOTH_PRESETS[type]||0;
+          const s = PRESET_SIZES[type];
+          const sum = u*qty;
+          price += sum; has = has || sum>0;
+          lines.push(`ขนาด ${s.w}x${s.l}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
+        } else {
+          if(!(cw>0 && cl>0)) continue;
+          const area = cw*cl;
+          const unit = Math.floor(area*250);
+          const sum = unit*qty;
+          price += sum; has = has || sum>0;
+          lines.push(`ขนาด ${cw}x${cl}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
+        }
+      }
+      return {has, text: lines.join('\n'), price};
+    }
+    const admin = document.getElementById('mpflowAdminSelect').value;
+
+    mpflowForm.onsubmit = function(e){
+      e.preventDefault();
+
+      const cust = (document.getElementById('mpflowCustInfo').value||'').trim();
+      const cloth = collectCloth();
+      if(!cloth.has){ alert('กรุณาเพิ่มรายการผ้าอย่างน้อย 1 รายการ และกรอกให้ครบถ้วน'); return; }
+
+      const salesName = (document.getElementById('mpflowSalesName').value||'').trim();
+      const dateText = (document.getElementById('mpflowDate').value||'').trim();
+
+      const items = collectFlatbarItems();
+      const kit = items.length ? calcFlatbarAggregate(items) : null;
+
+      let out = '';
+      if(cust) out += `ส่ง\n${cust}\n\n`;
+
+      out += `MP Flow 2.0 HDPE หนา 2 มิล\n`;
+      out += `${cloth.text}\n`;
+
+      if(kit && kit.text) out += `\n${kit.text}\n`;
+
+      const subtotal = cloth.price + (kit ? kit.totalPrice : 0);
+    
+      const grand = subtotal + ship;
+
+      out += `\nค่าจัดส่ง ${ship.toLocaleString()} บาท`;
+      if(ship === 0 && subtotal>0) out += `\n(ส่งฟรีเมื่อยอดสินค้า 2,000 บาทขึ้นไป และไม่ใช่เคสขนส่งนิ่ม)`;
+      
+
+      out += `\n\n📌 สรุปยอดรวมทั้งหมด: ${grand.toLocaleString()} บาท\n`;
+      out += `✅ จ่ายก่อนส่งทุกกรณี\n\n`;
+      out += `${BANK_TEXT}\n`;
+
+      if(salesName) out += `\n\nผู้ทำรายการ: ${salesName}`;
+      if(dateText) out += `\nวันที่: ${dateText}`;
+      if(admin){
+        out += `\n\nแอดมิน: ${admin}`;
+      }
+
+      mpflowResult.value = out.trim();
+      mpflowCopy.classList.remove('hidden');
+      mpflowReset.classList.remove('hidden');
+    };
+
+    mpflowCopy.onclick = ()=>{ mpflowResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
+    mpflowReset.onclick = ()=>{
+      mpflowForm.reset();
+      clothTableBody.innerHTML='';
+      makeClothRow('custom');
+      flatbarItemsBody.innerHTML='';
+      makeFlatbarRow();
+      mpflowResult.value='';
+      mpflowCopy.classList.add('hidden');
+      mpflowReset.classList.add('hidden');
+    };
+
+    // copy buttons
+    pondCopy.onclick = ()=>{ pondResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
+  </script>
+</body>
+</html>
