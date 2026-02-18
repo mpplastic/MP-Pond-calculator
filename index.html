@@ -7,7 +7,6 @@
 
   <style>
     :root{
-      /* VSC-like palette */
       --clr-primary:#1F3668;
       --clr-primary-dark:#4166b4;
       --clr-secondary:#2B4A86;
@@ -39,23 +38,21 @@
 
     .tabs{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:14px 0 0; padding:0 10px 18px; }
     .tab{
-  padding:10px 18px;
-  cursor:pointer;
-  background:#1F3668;        /* น้ำเงิน */
-  color:#ffffff;             /* ตัวหนังสือขาว */
-  border:2px solid #ffffff;  /* กรอบขาว */
-  border-radius:12px;
-  font-weight:600;
-  transition:.25s;
-}
-
+      padding:10px 18px;
+      cursor:pointer;
+      background:#1F3668;
+      color:#ffffff;
+      border:2px solid #ffffff;
+      border-radius:12px;
+      font-weight:600;
+      transition:.25s;
+    }
     .tab:hover{ transform:translateY(-1px); }
-   .tab.active{
-  background:#ffffff;        /* พื้นขาว */
-  color:#1F3668;             /* ตัวหนังสือน้ำเงิน */
-  border:2px solid #ffffff;  /* กรอบขาว */
-}
-
+    .tab.active{
+      background:#ffffff;
+      color:#1F3668;
+      border:2px solid #ffffff;
+    }
 
     .container{
       max-width:980px; margin:18px auto 40px; padding:24px;
@@ -74,7 +71,7 @@
       outline:none; border-color:#B9C7EA; box-shadow:0 0 0 4px rgba(101,126,185,.18);
     }
 
-    textarea{ resize:none; background:#F7F9FF; min-height:260px; } /* ✅ ยาวขึ้น */
+    textarea{ resize:none; background:#F7F9FF; min-height:260px; }
 
     button{ border:none; border-radius:12px; padding:12px 18px; font-size:15px; font-weight:900; cursor:pointer; transition:.25s; }
     .btn-primary{ background:var(--clr-primary); color:#fff; }
@@ -113,6 +110,56 @@
       .items-table input[type="number"], .items-table select{ height:56px; font-size:20px; }
       textarea{ min-height:300px; }
     }
+
+    .commission-box{
+      margin-top:12px;
+      padding:14px 16px;
+      border-radius:12px;
+      border:2px solid #1F3668;
+      background:#F7F9FF;
+      font-weight:900;
+      font-size:18px;
+      text-align:center;
+    }
+    #pondForm button,
+#mpflowForm button{
+  margin-right:10px;
+  margin-bottom:10px;
+}
+.hint{ margin-top:12px; }
+.commission-box{
+  margin-top:12px;
+  margin-bottom:16px;   /* 👈 เพิ่มบรรทัดนี้ */
+  padding:14px 16px;
+  border-radius:12px;
+  border:2px solid #1F3668;
+  background:#F7F9FF;
+  font-weight:900;
+  font-size:18px;
+  text-align:center;
+} 
+@keyframes borderFlowRed {
+  0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
+  50% { box-shadow: 0 0 20px 6px rgba(255,0,0,0.9); }
+  100% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
+}
+
+@keyframes borderFlowPurple {
+  0% { box-shadow: 0 0 0 0 rgba(128,0,255,0.7); }
+  50% { box-shadow: 0 0 25px 8px rgba(160,0,255,1); }
+  100% { box-shadow: 0 0 0 0 rgba(128,0,255,0.7); }
+}
+
+/* class trigger */
+.commission-red {
+  animation: borderFlowRed 1.5s infinite;
+  border-color: red !important;
+}
+
+.commission-purple {
+  animation: borderFlowPurple 1.5s infinite;
+  border-color: #a000ff !important;
+} 
   </style>
 </head>
 
@@ -154,20 +201,26 @@
         สูตรเผื่อผ้าเมื่อมีความลึก: เพิ่ม (ลึก×2 + 2) ให้ทั้งกว้างและยาว<br>
         ค่าส่ง: คิดตามน้ำหนัก (5 บาท/กก.) ขั้นต่ำ 300 สูงสุด 4,000
       </div>
-<label>ชื่อแอดมิน</label>
-<select id="adminSelect">
-  <option value="">เลือกชื่อแอดมิน...</option>
-  <option value="พี่เก๋">พี่เก๋</option>
-  <option value="บิ๊ง">บิ๊ง</option>
-  <option value="เปิ้ล">เปิ้ล</option>
-  <option value="อิง">อิง</option>
-</select>
+
+      <label>ชื่อแอดมิน</label>
+      <select id="adminSelect">
+        <option value="">เลือกชื่อแอดมิน...</option>
+        <option value="พี่เก๋">พี่เก๋</option>
+        <option value="บิ๊ง">บิ๊ง</option>
+        <option value="เปิ้ล">เปิ้ล</option>
+        <option value="อิง">อิง</option>
+      </select>
 
       <button type="submit" class="btn-primary">คำนวณ</button>
       <button type="button" id="pondReset" class="btn-warning hidden">คำนวณใหม่</button>
     </form>
 
     <textarea id="pondResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
+
+    <div id="pondCommissionBox" class="commission-box hidden">
+      💰 ค่าคอม (5% เฉพาะราคาผ้า): <span id="pondCommissionValue">0</span> บาท
+    </div>
+
     <button id="pondCopy" class="copy-btn hidden">คัดลอกข้อความ</button>
   </div>
 
@@ -218,14 +271,13 @@
       <div class="row">
         <div>
           <label>ชื่อแอดมิน</label>
-        <select id="mpflowAdminSelect">
-          <option value="">เลือกชื่อแอดมิน...</option>
-          <option value="พี่เก๋">พี่เก๋</option>
-          <option value="บิ๊ง">บิ๊ง</option>
-          <option value="เปิ้ล">เปิ้ล</option>
-          <option value="อิง">อิง</option>
-        </select>
-
+          <select id="mpflowAdminSelect">
+            <option value="">เลือกชื่อแอดมิน...</option>
+            <option value="พี่เก๋">พี่เก๋</option>
+            <option value="บิ๊ง">บิ๊ง</option>
+            <option value="เปิ้ล">เปิ้ล</option>
+            <option value="อิง">อิง</option>
+          </select>
         </div>
         <div>
           <label>วันที่ (ไม่บังคับ)</label>
@@ -235,6 +287,10 @@
 
       <button type="submit" class="btn-primary" style="margin-top:12px">คำนวณและสร้างสรุป</button>
       <button type="button" id="mpflowReset" class="btn-warning hidden">คำนวณใหม่</button>
+
+      <div id="mpflowCommissionBox" class="commission-box hidden">
+        💰 ค่าคอมเซล (5% เฉพาะราคาผ้า): <span id="mpflowCommissionValue">0</span> บาท
+      </div>
     </form>
 
     <textarea id="mpflowResult" readonly placeholder="ผลลัพธ์จะแสดงที่นี่"></textarea>
@@ -260,7 +316,7 @@
 ชื่อบัญชี: บริษัทมนูธรรมพลาสติก
 เลขที่: 1888-5999-39`;
 
-    // ---------- Shipping rules ----------
+    // ---------- Pond Shipping rules (by weight) ----------
     const SHIP_MIN = 300, SHIP_MAX = 4000, SHIP_RATE_PER_KG = 5;
     function clampShipping(x){
       if (x <= 0) return 0;
@@ -270,17 +326,7 @@
       return clampShipping(weightKg * SHIP_RATE_PER_KG);
     }
 
-    // MP FLOW Shipping (คงกติกาเดิม)
-    const MPFLOW_FLAT_SHIP = 300;
-    function calcShipMPFlow(itemsSubtotal, isNimCase){
-      if(!isNimCase && itemsSubtotal >= 2000) return 0;
-      if(itemsSubtotal <= 0) return 0;
-      return MPFLOW_FLAT_SHIP;
-    }
-
-    // ---------- Pond pricing (ไม่มีโปร) ----------
-    // อ้างอิงราคาปกติจากโค้ดเดิม + เพิ่ม LDPE 0.5
-    // LDPE 0.3 = 40, LDPE 0.5 = 60, HDPE 0.5 = 65, HDPE 0.75 = 85, HDPE 1.0 = 105
+    // ---------- Pond pricing ----------
     function getPondPriceList(){
       return {
         '0.3L': { price:40,  material:'LDPE', thk:0.3 },
@@ -290,7 +336,6 @@
         '1.0H': { price:105, material:'HDPE', thk:1.0 }
       };
     }
-
     function thkToKgPerSqm(thk){
       const t = Number(thk);
       return (t === 0.3) ? 0.3 :
@@ -299,7 +344,7 @@
              (t === 1.0) ? 1.0 : 0;
     }
 
-    // ---------- POND LOGIC ----------
+    // ---------- POND ----------
     const pondForm = document.getElementById('pondForm');
     const pondWidth = document.getElementById('pondWidth');
     const pondLength = document.getElementById('pondLength');
@@ -309,6 +354,9 @@
     const pondCopy = document.getElementById('pondCopy');
     const pondReset = document.getElementById('pondReset');
 
+    const pondCommissionBox = document.getElementById('pondCommissionBox');
+    const pondCommissionValue = document.getElementById('pondCommissionValue');
+
     pondForm.onsubmit = function(e){
       e.preventDefault();
 
@@ -317,9 +365,9 @@
       if(!size || w<=0 || l<=0){ alert('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง'); return; }
 
       const cust = (pondCustInfo.value || '').trim();
-      const ow = w, ol = l;
+      const hasDepth = d > 0;
 
-      if(d>0){ w = w + d*2 + 2; l = l + d*2 + 2; }
+      if(hasDepth){ w = w + d*2 + 2; l = l + d*2 + 2; }
 
       const priceList = getPondPriceList();
       const area = w*l;
@@ -327,12 +375,16 @@
       let out = '';
       if(cust) out += `ส่ง\n${cust}\n\n`;
 
+      // reset commission UI each run
+      pondCommissionBox.classList.add('hidden');
+      pondCommissionValue.textContent = '0';
+
       if(size.value === 'all'){
         const lines = Object.keys(priceList).map(k=>{
           const p = priceList[k];
           const total = Math.floor(area * p.price);
           const label = `${p.material} ${p.thk}`;
-          return `✅ ${label} มม. – ${total.toLocaleString()} บาท (${p.price} บาท/ตร.ม.)`;
+          return `• ${label} มม. – ${total.toLocaleString()} บาท (${p.price} บาท/ตร.ม.)`;
         }).join('\n');
 
         out += `จากขนาดที่ลูกค้าแจ้งมา ราคาประเมินดังนี้ค่ะ\n`;
@@ -340,20 +392,20 @@
         out += `สนใจความหนาไหนแจ้งได้เลยค่ะ 😊`;
       } else {
         const sel = priceList[size.value];
-        const total = Math.floor(area * sel.price);
-
+        const clothTotal = Math.floor(area * sel.price);         // ราคาผ้า (เฉพาะสินค้า)
+        const commission = Math.floor(clothTotal * 0.05);        // ค่าคอม 5% ของราคาผ้า
         const kg = area * thkToKgPerSqm(sel.thk);
         const ship = calcShipPlasticByWeightKg(kg);
-        const grand = Math.floor(total + ship);
+        const grand = Math.floor(clothTotal + ship);
 
         out += `📍 รายการ:\n`;
         out += `ผ้าพลาสติก ${sel.material} หนา ${sel.thk} มม. (${sel.price} บาท/ตร.ม.)\n`;
-        
-        if(d>0){out += `ขนาด ${ow} ม. × ${ol} ม.${d>0?` ลึก ${d} ม.`:''}\n`;}
-        out += `ผ้าขนาด ${w} ม. × ${l} ม. = ${area.toLocaleString()} ตร.ม.\n`;
-        out += `(ขนาดผ้านี้ต้องวัดแนบพื้น และเผื่อขอบข้างละ 1 เมตรแล้ว)\n\n`;
+        if(hasDepth){
+          out += `หมายเหตุ: มีความลึก ระบบเผื่อผ้าตามสูตร (ลึก×2 + 2)\n`;
+        }
+        out += `ผ้าขนาด ${area.toLocaleString()} ตร.ม.\n\n`;
 
-        out += `ราคาผ้า ${total.toLocaleString()} บาท\n`;
+        out += `ราคาผ้า ${clothTotal.toLocaleString()} บาท\n`;
         out += `ค่าจัดส่ง ${ship.toLocaleString()} บาท\n`;
         out += `น้ำหนักประมาณ ${kg.toFixed(1)} กก.\n\n`;
 
@@ -361,10 +413,21 @@
         out += `${BANK_TEXT}\n\n`;
         out += `รบกวนลูกค้าตรวจสอบรายการให้ครบก่อนยืนยันนะคะ ✨\n`;
         out += `หากเริ่มผลิตแล้ว จะไม่สามารถแก้ไขหรือยกเลิกได้ค่ะ\n`;
+
         const admin = document.getElementById('adminSelect').value;
-        if(admin){
-  out += `\nแอดมิน: ${admin}`;
-}
+        if(admin) out += `\nแอดมิน: ${admin}`;
+
+        // show commission box (NOT in summary text)
+        pondCommissionValue.textContent = commission.toLocaleString();
+        pondCommissionBox.classList.remove('hidden');
+        pondCommissionBox.classList.remove('commission-red','commission-purple');
+
+        if(commission > 5000){
+          pondCommissionBox.classList.add('commission-purple');
+        }else if(commission > 2000){
+          pondCommissionBox.classList.add('commission-red');
+        }
+
       }
 
       pondResult.value = out.trim();
@@ -372,8 +435,21 @@
       pondReset.classList.remove('hidden');
     };
 
-    pondCopy.onclick = ()=>{ pondResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
-    pondReset.onclick = ()=>{ pondForm.reset(); pondResult.value=''; pondCopy.classList.add('hidden'); pondReset.classList.add('hidden'); };
+    pondCopy.onclick = ()=>{
+      pondResult.select();
+      document.execCommand('copy');
+      alert('คัดลอกข้อความแล้ว');
+    };
+    pondReset.onclick = ()=>{
+      pondForm.reset();
+      pondResult.value='';
+      pondCopy.classList.add('hidden');
+      pondReset.classList.add('hidden');
+      pondCommissionBox.classList.add('hidden');
+      pondCommissionValue.textContent='0';
+      pondCommissionBox.classList.remove('commission-red','commission-purple');
+
+    };
 
     // ---------- MP FLOW ----------
     const mpflowForm = document.getElementById('mpflowForm');
@@ -381,9 +457,13 @@
     const mpflowCopy = document.getElementById('mpflowCopy');
     const mpflowReset = document.getElementById('mpflowReset');
 
+    const mpflowCommissionBox = document.getElementById('mpflowCommissionBox');
+    const mpflowCommissionValue = document.getElementById('mpflowCommissionValue');
+
     const clothTableBody = document.querySelector('#clothTable tbody');
     const btnAddCloth = document.getElementById('addCloth');
 
+    // presets
     const CLOTH_PRESETS = {
       '4x3':2400, '4x3.5':2800, '6x3.5':4200, '6x4':4800,
       '7x3.5':4900, '7x4':5600, '8x4':6500, '8x5':8500
@@ -417,7 +497,6 @@
       const sel = tr.querySelector('.ptype');
       const cw = tr.querySelector('.cw');
       const cl = tr.querySelector('.cl');
-      const delBtn = tr.querySelector('.del');
 
       function applyType(){
         const val = sel.value;
@@ -431,11 +510,12 @@
       }
 
       sel.addEventListener('change', applyType);
-      delBtn.addEventListener('click', ()=> tr.remove());
+      tr.querySelector('.del').addEventListener('click', ()=> tr.remove());
       sel.value = defaultType;
       applyType();
       clothTableBody.appendChild(tr);
     }
+
     btnAddCloth.addEventListener('click', ()=> makeClothRow('custom'));
     makeClothRow('custom');
 
@@ -532,19 +612,39 @@ ${unitText}`
           const s = PRESET_SIZES[type];
           const sum = u*qty;
           price += sum; has = has || sum>0;
-          lines.push(`ขนาด ${s.w}x${s.l}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
+          lines.push(`ผ้าขนาด ${s.w}x${s.l}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
         } else {
           if(!(cw>0 && cl>0)) continue;
           const area = cw*cl;
           const unit = Math.floor(area*250);
           const sum = unit*qty;
           price += sum; has = has || sum>0;
-          lines.push(`ขนาด ${cw}x${cl}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
+          lines.push(`ผ้าขนาด ${cw}x${cl}${qty>1?` จำนวน ${qty} ผืน`:''} ราคา ${sum.toLocaleString()} บาท`);
         }
       }
       return {has, text: lines.join('\n'), price};
     }
-    const admin = document.getElementById('mpflowAdminSelect').value;
+
+    // MP Flow Shipping: width * 100 * qty (sum each row)
+    function calcMPFlowShipFromRows(){
+      let ship = 0;
+      const rows = [...clothTableBody.querySelectorAll('tr')];
+
+      for(const tr of rows){
+        const type = tr.querySelector('.ptype').value;
+        const qty  = Math.max(1, parseInt(tr.querySelector('.cq').value||1,10));
+
+        let width = 0;
+        if(type !== 'custom'){
+          width = PRESET_SIZES[type].w;
+        } else {
+          width = parseFloat(tr.querySelector('.cw').value||0);
+        }
+
+        if(width>0) ship += (width * 100 * qty);
+      }
+      return Math.floor(ship);
+    }
 
     mpflowForm.onsubmit = function(e){
       e.preventDefault();
@@ -553,11 +653,13 @@ ${unitText}`
       const cloth = collectCloth();
       if(!cloth.has){ alert('กรุณาเพิ่มรายการผ้าอย่างน้อย 1 รายการ และกรอกให้ครบถ้วน'); return; }
 
-      const salesName = (document.getElementById('mpflowSalesName').value||'').trim();
       const dateText = (document.getElementById('mpflowDate').value||'').trim();
+      const admin = (document.getElementById('mpflowAdminSelect').value||'').trim();
 
       const items = collectFlatbarItems();
       const kit = items.length ? calcFlatbarAggregate(items) : null;
+
+      const ship = calcMPFlowShipFromRows();
 
       let out = '';
       if(cust) out += `ส่ง\n${cust}\n\n`;
@@ -568,29 +670,39 @@ ${unitText}`
       if(kit && kit.text) out += `\n${kit.text}\n`;
 
       const subtotal = cloth.price + (kit ? kit.totalPrice : 0);
-    
       const grand = subtotal + ship;
 
-      out += `\nค่าจัดส่ง ${ship.toLocaleString()} บาท`;
-      if(ship === 0 && subtotal>0) out += `\n(ส่งฟรีเมื่อยอดสินค้า 2,000 บาทขึ้นไป และไม่ใช่เคสขนส่งนิ่ม)`;
-      
-
-      out += `\n\n📌 สรุปยอดรวมทั้งหมด: ${grand.toLocaleString()} บาท\n`;
-      out += `✅ จ่ายก่อนส่งทุกกรณี\n\n`;
+      out += `\nค่าจัดส่ง ${ship.toLocaleString()} บาท\n`;
+      out += `\n📌 สรุปยอดรวมทั้งหมด: ${grand.toLocaleString()} บาท\n`;
       out += `${BANK_TEXT}\n`;
 
-      if(salesName) out += `\n\nผู้ทำรายการ: ${salesName}`;
-      if(dateText) out += `\nวันที่: ${dateText}`;
-      if(admin){
-        out += `\n\nแอดมิน: ${admin}`;
-      }
+      if(dateText) out += `\n\nวันที่: ${dateText}`;
+      if(admin) out += `\nแอดมิน: ${admin}`;
 
       mpflowResult.value = out.trim();
       mpflowCopy.classList.remove('hidden');
       mpflowReset.classList.remove('hidden');
+
+      // commission box (5% of cloth price only)
+      const commission = Math.floor(cloth.price * 0.05);
+      mpflowCommissionValue.textContent = commission.toLocaleString();
+      mpflowCommissionBox.classList.remove('hidden');
+      mpflowCommissionBox.classList.remove('commission-red','commission-purple');
+
+      if(commission > 5000){
+        mpflowCommissionBox.classList.add('commission-purple');
+      }else if(commission > 2000){
+        mpflowCommissionBox.classList.add('commission-red');
+      }
+
     };
 
-    mpflowCopy.onclick = ()=>{ mpflowResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
+    mpflowCopy.onclick = ()=>{
+      mpflowResult.select();
+      document.execCommand('copy');
+      alert('คัดลอกข้อความแล้ว');
+    };
+
     mpflowReset.onclick = ()=>{
       mpflowForm.reset();
       clothTableBody.innerHTML='';
@@ -600,10 +712,11 @@ ${unitText}`
       mpflowResult.value='';
       mpflowCopy.classList.add('hidden');
       mpflowReset.classList.add('hidden');
-    };
+      mpflowCommissionBox.classList.add('hidden');
+      mpflowCommissionValue.textContent='0';
+      mpflowCommissionBox.classList.remove('commission-red','commission-purple');
 
-    // copy buttons
-    pondCopy.onclick = ()=>{ pondResult.select(); document.execCommand('copy'); alert('คัดลอกข้อความแล้ว'); };
+    };
   </script>
 </body>
 </html>
